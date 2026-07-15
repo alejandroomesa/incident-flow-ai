@@ -1,0 +1,37 @@
+import { z } from 'zod';
+
+export const IncidentCategorySchema = z.enum([
+  'unauthorized_access',
+  'data_breach_external_disclosure',
+  'improper_data_sharing',
+  'data_loss_destruction',
+  'phishing_social_engineering',
+  'system_misconfiguration',
+  'physical_security',
+  'other',
+]);
+
+export const IncidentSeveritySchema = z.enum(['low', 'medium', 'high', 'critical']);
+
+export const ProposedActionTypeSchema = z.enum(['create_internal_task', 'notify_consultant']);
+
+export const ProposedActionSchema = z.object({
+  type: ProposedActionTypeSchema,
+  title: z.string().min(3).max(200),
+  priority: z.enum(['low', 'medium', 'high', 'urgent']),
+  parameters: z.record(z.string(), z.unknown()).default({}),
+});
+
+// Field is named "reasoning" (an analytical support note), never "resolution" or
+// "verdict" — this naming enforces "classification tool, not legal authority."
+export const AgentOutputSchema = z.object({
+  category: IncidentCategorySchema,
+  severity: IncidentSeveritySchema,
+  confidence: z.number().min(0).max(1),
+  reasoning: z.string().min(20).max(2000),
+  requiresHumanReview: z.boolean().default(true),
+  proposedActions: z.array(ProposedActionSchema).max(5),
+});
+
+export type AgentOutput = z.infer<typeof AgentOutputSchema>;
+export type ProposedAction = z.infer<typeof ProposedActionSchema>;
