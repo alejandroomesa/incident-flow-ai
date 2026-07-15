@@ -1,5 +1,4 @@
-// Sensitive tool: only ever invoked from incident.service.ts's approval path
-// (incidentService.approveAction), never from the AI agent's tool loop.
+// Este archivo contiene una función de utilidad para notificar a un consultor sobre un incidente.
 export async function notifyConsultant(input: {
   incidentId: number;
   team: string;

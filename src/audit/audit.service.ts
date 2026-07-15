@@ -1,6 +1,7 @@
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import { pool } from '../config/database.js';
 
+// Servicio de auditoría para registrar y recuperar eventos de auditoría relacionados con incidentes
 export type ActorType = 'system' | 'ai_agent' | 'human';
 
 export interface AuditEventInput {

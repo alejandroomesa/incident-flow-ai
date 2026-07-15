@@ -22,8 +22,8 @@ export const ProposedActionSchema = z.object({
   parameters: z.record(z.string(), z.unknown()).default({}),
 });
 
-// Field is named "reasoning" (an analytical support note), never "resolution" or
-// "verdict" — this naming enforces "classification tool, not legal authority."
+// Schema para la salida del agente de IA, que incluye la categoría del incidente, 
+// severidad, confianza, razonamiento, si requiere revisión humana y las acciones propuestas
 export const AgentOutputSchema = z.object({
   category: IncidentCategorySchema,
   severity: IncidentSeveritySchema,

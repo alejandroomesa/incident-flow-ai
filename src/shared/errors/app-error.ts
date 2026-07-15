@@ -1,3 +1,7 @@
+// Este archivo define clases de error personalizadas para la aplicación.
+// Estas clases extienden la clase base Error y proporcionan códigos de estado HTTP
+// y códigos de error específicos para diferentes tipos de errores que 
+// pueden ocurrir en la aplicación.
 export class AppError extends Error {
   constructor(message: string, public statusCode: number, public code: string) {
     super(message);

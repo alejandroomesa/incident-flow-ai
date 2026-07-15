@@ -1,5 +1,4 @@
-// Fictional internal protocols, keyed by incident category, used only to give
-// the AI agent context for which actions to propose. Not legal guidance.
+// Agente IA que hace recomendaciones de acción para el equipo de seguridad de la empresa.
 const PROTOCOLS: Record<string, string> = {
   unauthorized_access:
     'Protocol INT-01: Identify affected systems, force credential rotation for compromised accounts, review access logs for the last 90 days, log a task for the security team.',
@@ -19,6 +18,7 @@ const PROTOCOLS: Record<string, string> = {
     'Protocol INT-00: General triage — gather more detail from the reporter, log a task for consultant review.',
 };
 
+// Devuelve el protocolo interno correspondiente a la categoría de incidente proporcionada
 export function getInternalProtocol(category: string): string {
   return PROTOCOLS[category] ?? PROTOCOLS.other;
 }

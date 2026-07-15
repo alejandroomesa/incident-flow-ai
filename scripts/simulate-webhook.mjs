@@ -1,6 +1,6 @@
-// Helper for the demo: sends a correctly-signed (or deliberately broken) webhook
-// request to POST /api/webhooks/incidents, so you don't have to hand-compute
-// an HMAC signature with curl during a live demo.
+// Ayuda para la demo: envía una solicitud webhook correctamente firmada (o deliberadamente
+// rota) a POST /api/webhooks/incidents, para que no tengas que calcular a mano
+// una firma HMAC con curl durante una demo en vivo.
 //
 // Usage:
 //   WEBHOOK_SECRET=<value from .env> node scripts/simulate-webhook.mjs valid

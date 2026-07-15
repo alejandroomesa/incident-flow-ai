@@ -4,6 +4,7 @@ import { env } from '../config/env.js';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace
+  // Extiende la interfaz Request de Express para incluir propiedades personalizadas
   namespace Express {
     interface Request {
       rawBody?: Buffer;
@@ -13,10 +14,12 @@ declare global {
   }
 }
 
+// Middleware para capturar el cuerpo sin procesar de la solicitud
 export function captureRawBody(req: Request, _res: Response, buf: Buffer): void {
   req.rawBody = buf;
 }
 
+// Middleware para verificar la firma del webhook
 export function verifyWebhookSignature(req: Request, res: Response, next: NextFunction): void {
   const signatureHeader = req.header('X-Webhook-Signature');
   const deliveryId = req.header('X-Webhook-Delivery');
