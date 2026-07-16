@@ -1,9 +1,14 @@
 import { createHash } from 'node:crypto';
-import OpenAI from 'openai';
-import type { ChatCompletionMessageParam, ChatCompletionTool } from 'openai/resources/index.js';
+import OpenAI, { APIError } from 'openai';
+import type {
+  ChatCompletionMessageParam,
+  ChatCompletionTool,
+  ChatCompletionCreateParamsNonStreaming,
+} from 'openai/resources/index.js';
 import { env } from '../config/env.js';
 import { getInternalProtocol } from '../tools/get-protocol.tool.js';
 import { saveAuditEvent } from '../tools/save-audit-event.tool.js';
+import { AIProviderError } from '../shared/errors/app-error.js';
 import { AgentOutputSchema } from './agent-output.schema.js';
 import type { AIProvider, ClassificationRequest, ClassificationResult } from './ai-provider.interface.js';
 
@@ -145,6 +150,33 @@ export class ClaudeProvider implements AIProvider {
     });
   }
 
+  private async createCompletion(params: ChatCompletionCreateParamsNonStreaming & { reasoning?: { enabled: boolean } }) {
+    try {
+      return await this.client.chat.completions.create(params);
+    } catch (err) {
+      if (err instanceof APIError) {
+        if (err.status === 402) {
+          throw new AIProviderError(
+            'OpenRouter no tiene créditos suficientes para completar el análisis con IA. ' +
+              'Añade crédito en https://openrouter.ai/settings/credits y vuelve a intentarlo.',
+            502,
+          );
+        }
+        if (err.status === 429) {
+          throw new AIProviderError('Se alcanzó el límite de peticiones de OpenRouter. Inténtalo de nuevo en unos segundos.', 502);
+        }
+        if (err.status === 401) {
+          throw new AIProviderError('La API key de OpenRouter (OPENROUTER_API_KEY) no es válida o ha expirado.', 502);
+        }
+        if (err.status === 404) {
+          throw new AIProviderError(`El modelo configurado "${params.model}" no está disponible en OpenRouter.`, 502);
+        }
+        throw new AIProviderError(`Error del proveedor de IA (OpenRouter): ${err.message}`, 502);
+      }
+      throw new AIProviderError(`No se pudo contactar con el proveedor de IA (OpenRouter): ${String(err)}`, 502);
+    }
+  }
+
   async classifyIncident(req: ClassificationRequest): Promise<ClassificationResult> {
     const startedAt = Date.now();
     const messages: ChatCompletionMessageParam[] = [
@@ -154,9 +186,12 @@ export class ClaudeProvider implements AIProvider {
 
     for (let i = 0; i < MAX_ITERATIONS; i++) {
       const forcingFinal = i === MAX_ITERATIONS - 1;
-      const response = await this.client.chat.completions.create({
+      const response = await this.createCompletion({
         model: env.CLAUDE_MODEL,
-        max_tokens: 800,
+        max_tokens: 1024,
+        // Extended thinking traces aren't consumed anywhere in this flow — they only
+        // eat into max_tokens and risk truncating the final tool-call JSON. Disable it.
+        reasoning: { enabled: false },
         tools,
         tool_choice: forcingFinal ? { type: 'function', function: { name: 'return_classification' } } : 'auto',
         messages,

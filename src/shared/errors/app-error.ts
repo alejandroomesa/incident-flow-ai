@@ -26,3 +26,9 @@ export class UnauthorizedError extends AppError {
     super(message, 401, 'unauthorized');
   }
 }
+
+export class AIProviderError extends AppError {
+  constructor(message: string, statusCode = 502) {
+    super(message, statusCode, 'ai_provider_error');
+  }
+}
