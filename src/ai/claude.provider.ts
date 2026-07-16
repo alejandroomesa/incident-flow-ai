@@ -188,10 +188,10 @@ export class ClaudeProvider implements AIProvider {
       const forcingFinal = i === MAX_ITERATIONS - 1;
       const response = await this.createCompletion({
         model: env.CLAUDE_MODEL,
-        max_tokens: 1024,
-        // Extended thinking traces aren't consumed anywhere in this flow — they only
-        // eat into max_tokens and risk truncating the final tool-call JSON. Disable it.
-        reasoning: { enabled: false },
+        // Some models (e.g. free ones) mandate reasoning and reject `reasoning: {enabled: false}`,
+        // so we don't force it off — instead we budget enough max_tokens to cover both the
+        // reasoning trace and the final tool-call JSON.
+        max_tokens: 2000,
         tools,
         tool_choice: forcingFinal ? { type: 'function', function: { name: 'return_classification' } } : 'auto',
         messages,
